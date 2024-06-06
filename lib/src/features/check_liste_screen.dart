@@ -1,6 +1,7 @@
 import 'package:checkliste/src/data/database_repository.dart';
 import 'package:checkliste/src/features/parag.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CheckListeScreen extends StatefulWidget {
   final DatabaseRepository databaseRepository;
@@ -15,6 +16,7 @@ class _CheckListeScreenState extends State<CheckListeScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    String? firstName;
     return Scaffold(
       body: SafeArea(
           child: Padding(
@@ -27,7 +29,7 @@ class _CheckListeScreenState extends State<CheckListeScreen> {
                 if (snapshot.connectionState == ConnectionState.done &&
                     !snapshot.hasError) {
                   // Fall 1: Future ist komplett und hat Daten!
-                  return Text("Text: ${snapshot.data}");
+                  return Text("Titel: ${snapshot.data}");
                 } else if (snapshot.connectionState != ConnectionState.done) {
                   // Fall 2: Sind noch im Ladezustand
                   return const CircularProgressIndicator();
@@ -44,19 +46,29 @@ class _CheckListeScreenState extends State<CheckListeScreen> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () async {
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                // SPEICHERN
+                await prefs.setString("first", "Angi");
                 Parag ting = Parag(titele: _textEditingController.text);
                 _textEditingController.clear();
                 await widget.databaseRepository.addParag(ting);
               },
-              child: const Text("Zahl speichern"),
+              child: const Text("Text speichern"),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () async {
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                // LESEN
+
                 paragFuture = widget.databaseRepository.getParags();
-                setState(() {});
+                setState(() {
+                  firstName = prefs.getString("first");
+                });
               },
-              child: const Text("Neu laden"),
+              child: const Text("Text aufrufen"),
             ),
           ],
         ),
